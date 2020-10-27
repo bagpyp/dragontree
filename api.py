@@ -1,38 +1,27 @@
 from flask import Flask, request, jsonify
 import sqlite3
 import os
+import time
+import sqlalchemy
+
 app = Flask(__name__)
 
-@app.route('/')
-def hello_world():
-    return 'Hello, World!'
+@app.route('/record')
+def collect_measurement():
+    dragontree = int(request.args.get('dragontree'))
+    now = time.strftime('%Y-%m-%d %H:%M:%S')
+    engine = sqlalchemy.create_engine('postgres://ynumvhqilbxvod:590b20a0b406d7b78c825d36151de44e5bd1ecbc53529c0db3c4f50685443093@ec2-3-216-92-193.compute-1.amazonaws.com:5432/d8keu230b7fs9s')
+    engine.connect()
+    engine.execute(f"INSERT INTO dragontree VALUES ('{now}',{dragontree})")
+    return f"Inserted moisture value {dragontree} in table 'dragontree' at time {now}"
 
-@app.route('/add')
-def add():
-    a = request.args.get('a')
-    b = request.args.get('b')
-    return jsonify(float(a) + float(b))
-
-@app.route('/setdata')   # ,method=['POST'])
-def set_data():
-    a = request.args.get('a')
-    b = request.args.get('b')
-    conn = sqlite3.connect("data.db")
-    cur = conn.cursor()
-    cur.execute("INSERT INTO data VALUES ({},{})".format(a,b))
-    conn.commit()
-    conn.close()
-    return 'Inserted a:{} b:{}'.format(a, b)
-
-@app.route('/data')
-def get_data():
-    a = request.args.get('a')
-    conn = sqlite3.connect("data.db")
-    cur = conn.cursor()
-    res = cur.execute("SELECT * FROM data where a={}".format(a))
-    rows = [r for r in res]
-    conn.close()
-    return jsonify(rows)
+@app_route('/')
+def display_data():
+    engine = sqlalchemy.create_engine('postgres://ynumvhqilbxvod:590b20a0b406d7b78c825d36151de44e5bd1ecbc53529c0db3c4f50685443093@ec2-3-216-92-193.compute-1.amazonaws.com:5432/d8keu230b7fs9s')
+    engine.connect()
+    data = engine.execute('SELECT * FROM dragontree')
+    sheet = [row+'\n' for row in data]
+    return data
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
