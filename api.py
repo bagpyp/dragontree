@@ -15,7 +15,7 @@ def collect_measurement():
     engine.execute(f"INSERT INTO dragontree VALUES ('{now}',{dragontree})")
     return f"Inserted moisture value {dragontree} in table 'dragontree' at time {now}"
 
-@app_route('/')
+@app.route('/')
 def display_data():
     engine = sqlalchemy.create_engine('postgres://ynumvhqilbxvod:590b20a0b406d7b78c825d36151de44e5bd1ecbc53529c0db3c4f50685443093@ec2-3-216-92-193.compute-1.amazonaws.com:5432/d8keu230b7fs9s')
     engine.connect()
