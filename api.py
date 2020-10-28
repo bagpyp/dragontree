@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import sqlite3
 import os
 import time
+import pandas as pd
 import sqlalchemy
 
 app = Flask(__name__)
@@ -17,13 +18,18 @@ def collect_measurement():
     engine.execute(f"INSERT INTO dragontree VALUES ('{now}',{dragontree})")
     return f"Inserted moisture value {dragontree} in table 'dragontree' at time {now}"
 
+
+    
+
 @app.route('/')
 def display_data():
     engine = sqlalchemy.create_engine(url)
     engine.connect()
-    data = engine.execute('SELECT * FROM dragontree')
-    sheet = ''.join([str(row)+'\n' for row in data])
-    return sheet
+    data = engine.execute('SELECT * FROM dragontree').fetchall()
+    df = pd.DataFrame(data,columns=['time','voltage'])
+    df.time = pd.to_datetime(df.time)
+    df = df.set_index('time')
+    return df.to_html()
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
