@@ -6,8 +6,7 @@ import sqlalchemy
 
 app = Flask(__name__)
 
-conf = os.popen('heroku config').read()
-url = 'postgres' + conf.split('postgres')[1]
+url = 'postgres://jfeifvvkipgowd:f96a639e478d66558b4783c394c105239d0a1d2a700142f876d439a6239f21ab@ec2-34-234-185-150.compute-1.amazonaws.com:5432/d86psflil6tjf5'
 
 @app.route('/record')
 def collect_measurement():
