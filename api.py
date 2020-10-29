@@ -7,15 +7,17 @@ import sqlalchemy
 
 app = Flask(__name__)
 
-url = 'postgres://jfeifvvkipgowd:f96a639e478d66558b4783c394c105239d0a1d2a700142f876d439a6239f21ab@ec2-34-234-185-150.compute-1.amazonaws.com:5432/d86psflil6tjf5'
+# for local dev -> export DATABASE_URL=$(heroku config:get DATABASE_URL)
+url = os.environ.get('DATABASE_URL')
 
 @app.route('/record')
 def collect_measurement():
     dragontree = int(request.args.get('dragontree'))
     now = time.strftime('%Y-%m-%d %H:%M:%S')
     engine = sqlalchemy.create_engine(url)
-    engine.connect()
+    conn = engine.connect()
     engine.execute(f"INSERT INTO dragontree VALUES ('{now}',{dragontree})")
+    conn.close()
     return f"Inserted moisture value {dragontree} in table 'dragontree' at time {now}"
 
 
@@ -24,8 +26,9 @@ def collect_measurement():
 @app.route('/')
 def display_data():
     engine = sqlalchemy.create_engine(url)
-    engine.connect()
+    conn = engine.connect()
     data = engine.execute('SELECT * FROM dragontree').fetchall()
+    conn.close()
     df = pd.DataFrame(data,columns=['time','voltage'])
     df.time = pd.to_datetime(df.time)
     df = df.set_index('time')
