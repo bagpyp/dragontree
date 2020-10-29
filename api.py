@@ -15,7 +15,7 @@ def collect_measurement():
     dragontree = int(request.args.get('dragontree'))
     now = time.strftime('%Y-%m-%d %H:%M:%S')
     engine = sqlalchemy.create_engine(url)
-    with engine.connect() as conn:
+    with engine.connect():
         engine.execute(f"INSERT INTO dragontree VALUES ('{now}',{dragontree})")
     
     return f"Inserted moisture value {dragontree} in table 'dragontree' at time {now}"
@@ -26,7 +26,7 @@ def collect_measurement():
 @app.route('/')
 def display_data():
     engine = sqlalchemy.create_engine(url)
-    with engine.connect() as conn:
+    with engine.connect():
         data = engine.execute('SELECT * FROM dragontree').fetchall()
     df = pd.DataFrame(data,columns=['time','voltage'])
     df.time = pd.to_datetime(df.time)
