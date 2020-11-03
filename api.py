@@ -20,14 +20,11 @@ def collect_measurement():
     
     return f"Inserted moisture value {dragontree} in table 'dragontree' at time {now}"
 
-
-    
-
 @app.route('/')
 def display_data():
     engine = sqlalchemy.create_engine(url)
     with engine.connect():
-        data = engine.execute('SELECT * FROM dragontree').fetchall()
+        data = engine.execute('SELECT * FROM dragontree ORDER BY time LIMIT 10').fetchall()
     df = pd.DataFrame(data,columns=['time','voltage'])
     df.time = pd.to_datetime(df.time)
     df = df.set_index('time')
