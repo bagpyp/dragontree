@@ -16,7 +16,16 @@ def collect_measurement():
     now = time.strftime('%Y-%m-%d %H:%M:%S')
     engine = sqlalchemy.create_engine(url)
     with engine.connect():
-        engine.execute('DELETE FROM dragontree WHERE time NOT IN (SELECT time FROM (SELECT TOP 9 time FROM time) AS x)')
+        n = engine.execute('SELECT COUNT(*) FROM dragontree').fetchall()[0][0]
+        if n > 10:
+            k = n-10
+            engine.execute\
+                (\
+                'DELETE FROM dragontree WHERE time IN'\
+                    + '('\
+                        + f'SELECT time FROM dragontree ORDER BY time ASC LIMIT {k}'\
+                    + ')'\
+                )
         engine.execute(f"INSERT INTO dragontree VALUES ('{now}',{dragontree})")
     
     return f"Inserted moisture value {dragontree} in table 'dragontree' at time {now}"
