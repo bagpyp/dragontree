@@ -6,7 +6,6 @@ import pandas as pd
 import sqlalchemy
 
 app = Flask(__name__)
-l = 100
 
 # for local dev -> export DATABASE_URL=$(heroku config:get DATABASE_URL)
 url = os.environ.get('DATABASE_URL')
@@ -17,8 +16,9 @@ def collect_measurement():
     now = time.strftime('%Y-%m-%d %H:%M:%S')
     engine = sqlalchemy.create_engine(url)
     with engine.connect():
-        n = engine.execute('SELECT COUNT(*) FROM dragontree').fetchall()[0][0]
+        l = 100 # number of records to store/show
         l -= 1
+        n = engine.execute('SELECT COUNT(*) FROM dragontree').fetchall()[0][0]
         if n > l:
             k = n - l
             engine.execute\
