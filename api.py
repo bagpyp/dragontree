@@ -6,6 +6,7 @@ import pandas as pd
 import sqlalchemy
 
 app = Flask(__name__)
+l = 100
 
 # for local dev -> export DATABASE_URL=$(heroku config:get DATABASE_URL)
 url = os.environ.get('DATABASE_URL')
@@ -17,8 +18,9 @@ def collect_measurement():
     engine = sqlalchemy.create_engine(url)
     with engine.connect():
         n = engine.execute('SELECT COUNT(*) FROM dragontree').fetchall()[0][0]
-        if n > 10:
-            k = n-10
+        l -= 1
+        if n > l:
+            k = n - l
             engine.execute\
                 (\
                 'DELETE FROM dragontree WHERE time IN'\
