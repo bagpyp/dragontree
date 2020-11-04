@@ -16,7 +16,7 @@ def collect_measurement():
     now = time.strftime('%Y-%m-%d %H:%M:%S')
     engine = sqlalchemy.create_engine(url)
     with engine.connect():
-        l = 100 # number of records to store/show
+        l = 10000 # number of records to store/show
         l -= 1
         n = engine.execute('SELECT COUNT(*) FROM dragontree').fetchall()[0][0]
         if n > l:
