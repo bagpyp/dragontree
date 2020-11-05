@@ -1,9 +1,11 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request
 import sqlite3
 import os
 import time
 import pandas as pd
 import sqlalchemy
+import plotly.io as pio
+import plotly.express as px
 
 app = Flask(__name__)
 
@@ -39,8 +41,11 @@ def display_data():
         data = engine.execute('SELECT * FROM dragontree ORDER BY time DESC').fetchall()
     df = pd.DataFrame(data,columns=['time','voltage'])
     df.time = pd.to_datetime(df.time)
-    df = df.set_index('time')
-    return df.to_html(show_dimensions=True)
+    # df = df.set_index('time')
+    fig = px.line(df, x='time', y="voltage")
+    pio.write_html(fig, file='index.html')
+    with open('index.html') as file:
+        return file.read()
 
 if __name__ == "__main__":
     port = int(os.environ.get('PORT', 5000))
