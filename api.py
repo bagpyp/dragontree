@@ -43,6 +43,20 @@ def display_data():
     df.time = pd.to_datetime(df.time)
     # df = df.set_index('time')
     fig = px.line(df, x='time', y="voltage")
+    fig.update_xaxes(
+        rangeslider_visible=True,
+        rangeselector=dict(
+            buttons=list([
+                dict(count=30, label="30min", step="minute", stepmode="backward"),
+                dict(count=6, label="6hours", step="hour", stepmode="backward"),
+                dict(count=12, label="12hours", step="hour", stepmode="backward"),
+                dict(count=1, label="1day", step="day", stepmode="backward"),
+                dict(step="all")
+            ])
+        )
+    )
+    fig.show()
+
     pio.write_html(fig, file='index.html')
     with open('index.html') as file:
         return file.read()
