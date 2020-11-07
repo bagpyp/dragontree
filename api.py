@@ -38,20 +38,18 @@ def collect_measurement():
 @app.route('/')
 def display_data():
     engine = sqlalchemy.create_engine(url)
-    try:  
-        with engine.connect():
-            data = engine.execute('SELECT * FROM dragontree ORDER BY time DESC').fetchall()
-        df = pd.DataFrame(data,columns=['time','voltage'])
-        df.time = pd.to_datetime(df.time)
-        df.set_index('time', inplace=True)
-        df = df.resample('30s').mean().interpolate()
-        windows = [1,5,15,30,60]
-        for i in windows:
-            df[f'minutes:{i}'] = df.rolling(f'{i}min').mean().voltage
-        df = df.reset_index()
-        df.to_pickle('df.pkl')
-    except sqlite3.OperationalError:
-        df = pd.read_pickle('df.pkl')
+
+    with engine.connect():
+        data = engine.execute('SELECT * FROM dragontree ORDER BY time DESC').fetchall()
+    df = pd.DataFrame(data,columns=['time','voltage'])
+    df.time = pd.to_datetime(df.time)
+    df.set_index('time', inplace=True)
+    df = df.resample('30s').mean().interpolate()
+    windows = [1,5,15,30,60]
+    for i in windows:
+        df[f'minutes:{i}'] = df.rolling(f'{i}min').mean().voltage
+    df = df.reset_index()
+
 
     # plotting
     fig = px.line(df, x='time', y=[f'minutes:{i}' for i in windows])
