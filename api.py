@@ -7,6 +7,7 @@ import sqlalchemy
 import plotly.io as pio
 import plotly.express as px
 
+
 app = Flask(__name__)
 
 # for local dev -> export DATABASE_URL=$(heroku config:get DATABASE_URL)
@@ -37,12 +38,23 @@ def collect_measurement():
 @app.route('/')
 def display_data():
     engine = sqlalchemy.create_engine(url)
-    with engine.connect():
-        data = engine.execute('SELECT * FROM dragontree ORDER BY time DESC').fetchall()
-    df = pd.DataFrame(data,columns=['time','voltage'])
-    df.time = pd.to_datetime(df.time)
-    # df = df.set_index('time')
-    fig = px.line(df, x='time', y="voltage")
+    try:  
+        with engine.connect():
+            data = engine.execute('SELECT * FROM dragontree ORDER BY time DESC').fetchall()
+        df = pd.DataFrame(data,columns=['time','voltage'])
+        df.time = pd.to_datetime(df.time)
+        df.set_index('time', inplace=True)
+        df = df.resample('30s').mean().interpolate()
+        windows = [1,5,15,30,60]
+        for i in windows:
+            df[f'minutes:{i}'] = df.rolling(f'{i}min').mean().voltage
+        df = df.reset_index()
+        df.to_pickle('df.pkl')
+    except sqlite3.OperationalError:
+        df = pd.read_pickle('df.pkl')
+
+    # plotting
+    fig = px.line(df, x='time', y=[f'minutes:{i}' for i in windows])
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
@@ -51,11 +63,10 @@ def display_data():
                 dict(count=6, label="6hours", step="hour", stepmode="backward"),
                 dict(count=12, label="12hours", step="hour", stepmode="backward"),
                 dict(count=1, label="1day", step="day", stepmode="backward"),
-                dict(step="all")
+                dict(label='all', step="all")
             ])
         )
     )
-    fig.show()
 
     pio.write_html(fig, file='index.html')
     with open('index.html') as file:
