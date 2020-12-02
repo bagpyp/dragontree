@@ -37,35 +37,43 @@ def collect_measurement():
 
 @app.route('/')
 def display_data():
-    engine = sqlalchemy.create_engine(url)
 
+    engine = sqlalchemy.create_engine(url)
     with engine.connect():
         data = engine.execute('SELECT * FROM dragontree ORDER BY time DESC').fetchall()
     df = pd.DataFrame(data,columns=['time','voltage'])
     df.time = pd.to_datetime(df.time)
-    df.set_index('time', inplace=True)
-    df = df.resample('30s').mean().interpolate()
-    windows = [1,5,15,30,60]
+    df.set_index('time', inplace=True)  
+    df = df.iloc[::-1]
+    df = df.reindex(df.index.union(pd.date_range(df.index[0],df.index[-1],freq='H',normalize=True)))
+    df = df.interpolate(method='time')
+    df = df.resample('H').asfreq().dropna()
+    windows = [6,12,18,24]
     for i in windows:
-        df[f'minutes:{i}'] = df.rolling(f'{i}min').mean().voltage
-    df = df.reset_index()
-
-
-    # plotting
-    fig = px.line(df, x='time', y=[f'minutes:{i}' for i in windows])
+        df[f'Hourly rolling mean: {i}'] = df.rolling(f'{i}H').mean().voltage
+    df.index.name = 'time'
+    df.reset_index(inplace=True)
+    fig = px.line(
+        df,
+        x = 'time',
+        y = [f'Hourly rolling mean: {i}' for i in windows],
+        title = "Dryness of my office plant, <em>Dragontree</em>",
+        labels = {
+            'value':'Capacative Moisture Soil (Volts)',
+            'time':'Time (slide to scale)',
+            'variable':'Upsample',
+        } 
+    )
     fig.update_xaxes(
         rangeslider_visible=True,
         rangeselector=dict(
             buttons=list([
-                dict(count=30, label="30min", step="minute", stepmode="backward"),
-                dict(count=6, label="6hours", step="hour", stepmode="backward"),
-                dict(count=12, label="12hours", step="hour", stepmode="backward"),
-                dict(count=1, label="1day", step="day", stepmode="backward"),
-                dict(label='all', step="all")
+                dict(count=12, label="12 hour window", step="hour", stepmode="backward"),
+                dict(count=7, label="7 day window", step="day", stepmode="backward"),
+                dict(label='All', step="all")
             ])
         )
     )
-
     pio.write_html(fig, file='index.html')
     with open('index.html') as file:
         return file.read()

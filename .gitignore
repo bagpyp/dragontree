@@ -1,2 +1,4 @@
-data.ipynb
 df.pkl
+data.py
+.vscode/
+__pycache__/
