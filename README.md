@@ -6,10 +6,10 @@
 
 ![potted plant with bionic capabilities](images/dragontree.JPG)
 
-![a v cool desk](desk.JPG)
+![a v cool desk](images/desk.JPG)
 
-![a coding environment](vsenv.png)
+![a coding environment](images/vsenv.png)
 
-![arduino IDE](arduino.png)
+![arduino IDE](images/arduino.png)
 
 
