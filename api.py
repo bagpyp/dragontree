@@ -44,6 +44,7 @@ def display_data():
     df = pd.DataFrame(data,columns=['time','voltage'])
     df.time = pd.to_datetime(df.time)
     df.set_index('time', inplace=True)  
+    df.voltage = -df.voltage
     df = df.iloc[::-1]
     df = df.reindex(df.index.union(pd.date_range(df.index[0],df.index[-1],freq='H',normalize=True)))
     df = df.interpolate(method='time')
@@ -52,11 +53,12 @@ def display_data():
     for i in windows:
         df[f'Hourly rolling mean: {i}'] = df.rolling(f'{i}H').mean().voltage
     df.index.name = 'time'
+    df.voltage.name = 'Raw Data'
     df.reset_index(inplace=True)
     fig = px.line(
         df,
         x = 'time',
-        y = [f'Hourly rolling mean: {i}' for i in windows],
+        y = ['Raw Data'] + [f'Hourly rolling mean: {i}' for i in windows],
         title = "Dryness of my office plant, <em>Dragontree</em>",
         labels = {
             'value':'Capacative Moisture Soil (Volts)',
