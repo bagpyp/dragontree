@@ -46,9 +46,9 @@ def display_data():
     df.set_index('time', inplace=True)  
     df.voltage = -df.voltage
     df = df.iloc[::-1]
-    df = df.reindex(df.index.union(pd.date_range(df.index[0],df.index[-1],freq='H',normalize=True)))
+    df = df.reindex(df.index.union(pd.date_range(df.index[0],df.index[-1],freq='30T',normalize=True)))
     df = df.interpolate(method='time')
-    df = df.resample('H').asfreq().dropna()
+    df = df.resample('30T').asfreq().dropna()
     windows = [6,12,18,24]
     for i in windows:
         df[f'Hourly rolling mean: {i}'] = df.rolling(f'{i}H').mean().voltage
