@@ -53,7 +53,7 @@ def display_data():
     for i in windows:
         df[f'Hourly rolling mean: {i}'] = df.rolling(f'{i}H').mean().voltage
     df.index.name = 'time'
-    df.voltage.name = 'Raw Data'
+    df.rename(columns = {'voltage':'Raw Data'}, inplace=True)
     df.reset_index(inplace=True)
     fig = px.line(
         df,
