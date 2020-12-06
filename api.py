@@ -59,9 +59,9 @@ def display_data():
         df,
         x = 'time',
         y = ['Raw Data'] + [f'Hourly rolling mean: {i}' for i in windows],
-        title = "Dryness of my office plant, <em>Dragontree</em>",
+        title = "Moisture Level of my office plant, <em>Dragontree</em>",
         labels = {
-            'value':'Capacative Moisture Soil (Volts)',
+            'value':'Capacative Soil Moisture (Volts)',
             'time':'Time (slide to scale)',
             'variable':'Upsample',
         } 
