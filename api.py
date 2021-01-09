@@ -6,7 +6,9 @@ import pandas as pd
 import sqlalchemy
 import plotly.io as pio
 import plotly.express as px
-
+import matplotlib.pyplot as plt
+import seaborn as sns
+from matplotlib.dates import DateFormatter, DayLocator
 
 app = Flask(__name__)
 
@@ -78,6 +80,41 @@ def display_data():
     )
     pio.write_html(fig, file='index.html')
     with open('index.html') as file:
+        return file.read()
+
+@app.route('/covid')
+def display_covid_data():
+    spop = pd.read_pickle('spop.pkl')
+    pop = spop.to_dict()
+    df = pd.read_json('https://covidtracking.com/api/states/daily')
+    df.date = pd.to_datetime(df.date, format='%Y%m%d')
+    #%%
+    sns.set()
+    fig, axes = plt.subplots(2,1, sharex = True)
+
+    scale = {'positive':1, 'death':100}
+
+
+    for i,metric in enumerate(list(scale.keys())):
+        data = pd.merge(df[['date','state',metric]],df.groupby('state').death.sum().rename('total'),left_on = 'state', right_on = 'state').sort_values(by='total')
+        data = data.pivot('date','state', metric)
+        data = data[list(pop.keys())]
+        data = data.apply(lambda x: scale[metric]*x/pop[x.name])
+        data = data.append(data.max().rename('max')).sort_values('max',axis=1,ascending=False).drop('max')
+        sns.lineplot(ax = axes[i], data=data, palette='Spectral')
+        axes[i].legend(ncol=3, loc='upper left')
+        axes[i].set_title(f'Covid {metric.title()}s per Capita per State, 2020')
+        axes[i].set_ylabel('Percentage of total Population')
+        axes[i].set_xlabel('Date')
+        axes[i].xaxis.set_major_formatter(DateFormatter('%b %d'))
+        axes[i].xaxis.set_major_locator(DayLocator(interval=7))
+    plt.xticks(fontsize=6)
+    fig.autofmt_xdate()
+    plt.tight_layout()
+
+    fig.save_fig('covid.jpeg')
+
+    with open('covid.html') as file:
         return file.read()
 
 if __name__ == "__main__":
